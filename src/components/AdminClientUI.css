@@ -1,0 +1,107 @@
+/* MAIN PAGE */
+.admin-container {
+  background: linear-gradient(135deg, #1A73E8, #0F4DB6);
+  min-height: 100vh;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* CARD */
+.admin-card {
+  background: #ffffff;
+  padding: 30px 40px;
+  width: 420px;
+  border-radius: 18px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.admin-title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1A73E8;
+  margin-bottom: 25px;
+  letter-spacing: 0.5px;
+}
+
+/* INPUT GROUP */
+.input-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #0F4DB6;
+}
+
+.input-group input,
+.input-group select {
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 2px solid #E1E8F5;
+  outline: none;
+  transition: 0.2s;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #1A73E8;
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.25);
+}
+
+/* CODE BOX */
+.code-box {
+  margin-top: 20px;
+  background: #E8F0FE;
+  padding: 15px;
+  border-radius: 12px;
+  border-left: 4px solid #1A73E8;
+}
+
+.code-box input {
+  width: 100%;
+  padding: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+}
+
+/* BUTTON */
+.save-btn {
+  width: 100%;
+  padding: 14px;
+  background: #1A73E8;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: 0.3s;
+}
+
+.save-btn:hover {
+  background: #0F4DB6;
+  transform: translateY(-2px);
+}
+
+/* ANIMATION */
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
