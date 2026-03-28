@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./AdminClientUI.css";
+
+const BASE_URL = "https://grateful-warmth-production-b64e.up.railway.app";
+
+const CATEGORY_OPTIONS = [
+  "Shopping",
+  "Food",
+  "Travel",
+  "Fashion",
+  "Electronics",
+  "Entertainment",
+  "Beauty",
+  "Wallet"
+];
 
 const AdminClientUI = () => {
-
-  /* ----------------------------------------------------
-          ADMIN BASIC INFO
-  ----------------------------------------------------- */
-
   const [adminConfig, setAdminConfig] = useState({
     adminName: ""
   });
-
-  const saveAdminName = async () => {
-    await axios.post("http://localhost:8080/api/admin/config", {
-      adminName: adminConfig.adminName
-    });
-
-    alert("Admin Name Saved Successfully!");
-  };
-
-
-  /* ----------------------------------------------------
-         ADMIN CONFIG (BANNERS + THEMES)
-  ----------------------------------------------------- */
 
   const [banners, setBanners] = useState({
     banner1: null,
@@ -31,309 +27,636 @@ const AdminClientUI = () => {
     banner4: null
   });
 
-  const [themeUpload, setThemeUpload] = useState({
-    themeName1: "",
-    themeName2: "",
-    themeName3: "",
-    themeName4: "",
-    themeName5: "",
-    img1: null,
-    img2: null,
-    img3: null,
-    img4: null,
-    img5: null
-  });
-
-  const [themeImagesPreview, setThemeImagesPreview] = useState({});
   const [bannerPreview, setBannerPreview] = useState({});
 
+  const [themeUpload, setThemeUpload] = useState({
+    themeName1: "",
+    themeImg1: null,
+    themeName2: "",
+    themeImg2: null,
+    themeName3: "",
+    themeImg3: null,
+    themeName4: "",
+    themeImg4: null,
 
-  /* ---------------- BANNERS ---------------- */
+    img1: null,
+    img1Name: "",
+    img2: null,
+    img2Name: "",
+    img3: null,
+    img3Name: "",
+    img4: null,
+    img4Name: "",
+
+    img6: null,
+    img6Name: "",
+    img7: null,
+    img7Name: "",
+    img8: null,
+    img8Name: "",
+    img9: null,
+    img9Name: "",
+
+    img11: null,
+    img11Name: "",
+    img12: null,
+    img12Name: "",
+    img13: null,
+    img13Name: "",
+    img14: null,
+    img14Name: "",
+
+    img16: null,
+    img16Name: "",
+    img17: null,
+    img17Name: "",
+    img18: null,
+    img18Name: "",
+    img19: null,
+    img19Name: ""
+  });
+
+  const [themePreview, setThemePreview] = useState({});
+
+  const [clientBrandForm, setClientBrandForm] = useState({
+    brandName: "",
+    category: "",
+    termsAndConditions: "",
+    howToRedeem: "",
+    brandImg: null
+  });
+
+  const [clientBrandPreview, setClientBrandPreview] = useState("");
+  const [clientBrandList, setClientBrandList] = useState([]);
+  const [brandLoading, setBrandLoading] = useState(false);
+  const [deleteLoadingId, setDeleteLoadingId] = useState(null);
+
+  const getImageUrl = (imgPath) => {
+    if (!imgPath) return "";
+
+    if (imgPath.startsWith("http://") || imgPath.startsWith("https://")) {
+      return imgPath;
+    }
+
+    if (imgPath.startsWith("/")) {
+      return `${BASE_URL}${imgPath}`;
+    }
+
+    return `${BASE_URL}/uploads/${imgPath}`;
+  };
+
+  const saveAdminName = async () => {
+    try {
+      await axios.post(`${BASE_URL}/api/admin/config`, {
+        adminName: adminConfig.adminName
+      });
+      alert("Admin Name Saved Successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save admin name");
+    }
+  };
 
   const handleBannerChange = (e, key) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const localUrl = URL.createObjectURL(file);
+    setBanners((prev) => ({
+      ...prev,
+      [key]: file
+    }));
 
-    setBannerPreview(prev => ({ ...prev, [key]: localUrl }));
-    setBanners(prev => ({ ...prev, [key]: file }));
+    setBannerPreview((prev) => ({
+      ...prev,
+      [key]: URL.createObjectURL(file)
+    }));
   };
 
   const saveBanners = async () => {
-    const form = new FormData();
+    try {
+      const form = new FormData();
 
-    form.append("banner1", banners.banner1);
-    form.append("banner2", banners.banner2);
-    form.append("banner3", banners.banner3);
-    form.append("banner4", banners.banner4);
+      Object.keys(banners).forEach((key) => {
+        if (banners[key]) {
+          form.append(key, banners[key]);
+        }
+      });
 
-    await axios.post("http://localhost:8080/api/admin/banner/upload", form, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+      await axios.post(`${BASE_URL}/api/admin/banner/upload`, form, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
-    alert("Banners Saved Successfully!");
+      alert("Banners Saved Successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save banners");
+    }
   };
 
-
-  /* ---------------- THEMES ---------------- */
-
-  const handleThemeImg = (e, key) => {
+  const handleThemeImage = (e, key) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const localUrl = URL.createObjectURL(file);
+    setThemeUpload((prev) => ({
+      ...prev,
+      [key]: file
+    }));
 
-    setThemeImagesPreview(prev => ({ ...prev, [key]: localUrl }));
-    setThemeUpload(prev => ({ ...prev, [key]: file }));
+    setThemePreview((prev) => ({
+      ...prev,
+      [key]: URL.createObjectURL(file)
+    }));
+  };
+
+  const handleThemeNameChange = (key, value) => {
+    setThemeUpload((prev) => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const saveTheme = async () => {
-    const form = new FormData();
+    try {
+      const form = new FormData();
 
-    form.append("themeName1", themeUpload.themeName1);
-    form.append("themeName2", themeUpload.themeName2);
-    form.append("themeName3", themeUpload.themeName3);
-    form.append("themeName4", themeUpload.themeName4);
-    form.append("themeName5", themeUpload.themeName5);
+      for (let i = 1; i <= 4; i++) {
+        const nameKey = `themeName${i}`;
+        const imgKey = `themeImg${i}`;
 
-    form.append("img1", themeUpload.img1);
-    form.append("img2", themeUpload.img2);
-    form.append("img3", themeUpload.img3);
-    form.append("img4", themeUpload.img4);
-    form.append("img5", themeUpload.img5);
+        if (themeUpload[nameKey]) form.append(nameKey, themeUpload[nameKey]);
+        if (themeUpload[imgKey]) form.append(imgKey, themeUpload[imgKey]);
+      }
 
-    await axios.post("http://localhost:8080/api/admin/theme/upload", form, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+      const fields = [
+        ["img1", "img1Name"],
+        ["img2", "img2Name"],
+        ["img3", "img3Name"],
+        ["img4", "img4Name"],
+        ["img6", "img6Name"],
+        ["img7", "img7Name"],
+        ["img8", "img8Name"],
+        ["img9", "img9Name"],
+        ["img11", "img11Name"],
+        ["img12", "img12Name"],
+        ["img13", "img13Name"],
+        ["img14", "img14Name"],
+        ["img16", "img16Name"],
+        ["img17", "img17Name"],
+        ["img18", "img18Name"],
+        ["img19", "img19Name"]
+      ];
 
-    alert("Theme Saved Successfully!");
+      fields.forEach(([fileKey, nameKey]) => {
+        if (themeUpload[fileKey]) form.append(fileKey, themeUpload[fileKey]);
+        if (themeUpload[nameKey]) form.append(nameKey, themeUpload[nameKey]);
+      });
+
+      await axios.post(`${BASE_URL}/api/admin/theme/upload`, form, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      alert("Theme Saved Successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to save theme");
+    }
   };
 
-
-  /* ----------------------------------------------------
-               CLIENT CONFIG
-  ----------------------------------------------------- */
-
-  const [client, setClient] = useState({
-    truvishId: "",
-    codeNumber: "",
-    clientName: "",
-    clientUrl: "",
-    clientTheme: "",
-    clientBrand: [],
-    clientValue: ""
-  });
-
-
-  /* ----------------------------------------------------
-       LOAD THEME NAME + IMAGE FROM BACKEND
-  ----------------------------------------------------- */
-
-  const [themeData, setThemeData] = useState({}); // theme name → image
-
-  useEffect(() => {
-    axios.get("http://localhost:8080/api/admin/config")
-      .then(res => {
-        const d = res.data;
-
-        const themes = {
-          [d.themeName1]: d.img1,
-          [d.themeName2]: d.img2,
-          [d.themeName3]: d.img3,
-          [d.themeName4]: d.img4,
-          [d.themeName5]: d.img5
-        };
-
-        const clean = Object.fromEntries(
-          Object.entries(themes).filter(([n, i]) => n && n.trim() !== "")
-        );
-
-        setThemeData(clean);
-      });
-  }, []);
-
-
-  /* Load latest code */
-  useEffect(() => {
-    axios.get("http://localhost:8080/api/truvish/latest-code")
-      .then(res => {
-        setClient(prev => ({
-          ...prev,
-          truvishId: res.data.truvishId,
-          codeNumber: res.data.truvishIdCodeNumber
-        }));
-      });
-  }, []);
-
-  const handleBrandChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-    setClient({ ...client, clientBrand: selected });
+  const fetchClientBrands = async () => {
+    try {
+      const res = await axios.get(`${BASE_URL}/api/client-choose-brand`);
+      setClientBrandList(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Failed to fetch client brands:", error);
+      setClientBrandList([]);
+    }
   };
 
+  useEffect(() => {
+    fetchClientBrands();
+  }, []);
 
-  /* ----------------------------------------------------
-      ⭐ FINAL UPDATED saveClient() → send clientThemeImg
-  ----------------------------------------------------- */
-  const saveClient = async () => {
+  const handleClientBrandImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-    // ⭐ GET theme image path from themeData
-    const selectedThemeImg = themeData[client.clientTheme];
-
-    const res = await axios.post("http://localhost:8080/api/admin/client/update", {
-      truvishId: client.truvishId,
-      clientName: client.clientName,
-      clientUrl: client.clientUrl,
-      clientTheme: client.clientTheme,
-      clientBrand: client.clientBrand,
-      truvishCodeValue: client.clientValue,
-
-      // ⭐ THIS IS THE ONLY FINAL UPDATE
-      clientThemeImg: selectedThemeImg
-    });
-
-    setClient(prev => ({
+    setClientBrandForm((prev) => ({
       ...prev,
-      codeNumber: res.data.truvishIdCodeNumber,
-      truvishId: res.data.truvishId
+      brandImg: file
     }));
 
-    alert("Client Saved Successfully!");
+    setClientBrandPreview(URL.createObjectURL(file));
   };
 
+  const handleClientBrandChange = (field, value) => {
+    setClientBrandForm((prev) => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const saveClientChooseBrand = async () => {
+    if (!clientBrandForm.brandName.trim()) {
+      alert("Please enter brand name");
+      return;
+    }
+
+    if (!clientBrandForm.category) {
+      alert("Please select category");
+      return;
+    }
+
+    if (!clientBrandForm.termsAndConditions.trim()) {
+      alert("Please enter terms and conditions");
+      return;
+    }
+
+    if (!clientBrandForm.howToRedeem.trim()) {
+      alert("Please enter how to redeem");
+      return;
+    }
+
+    if (!clientBrandForm.brandImg) {
+      alert("Please select brand image");
+      return;
+    }
+
+    try {
+      setBrandLoading(true);
+
+      const form = new FormData();
+      form.append("brandName", clientBrandForm.brandName);
+      form.append("category", clientBrandForm.category);
+      form.append("termsAndConditions", clientBrandForm.termsAndConditions);
+      form.append("howToRedeem", clientBrandForm.howToRedeem);
+      form.append("image", clientBrandForm.brandImg);
+
+      await axios.post(`${BASE_URL}/api/client-choose-brand/upload`, form, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      alert("Client Choose Brand added successfully!");
+
+      setClientBrandForm({
+        brandName: "",
+        category: "",
+        termsAndConditions: "",
+        howToRedeem: "",
+        brandImg: null
+      });
+      setClientBrandPreview("");
+
+      await fetchClientBrands();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to add Client Choose Brand");
+    } finally {
+      setBrandLoading(false);
+    }
+  };
+
+  const deleteBrand = async (id, name) => {
+    const ok = window.confirm(`Delete "${name}" ?`);
+    if (!ok) return;
+
+    try {
+      setDeleteLoadingId(id);
+
+      await axios.delete(`${BASE_URL}/api/client-choose-brand/${id}`);
+
+      setClientBrandList((prev) => prev.filter((item) => item.id !== id));
+      alert("Brand deleted successfully!");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete brand");
+    } finally {
+      setDeleteLoadingId(null);
+    }
+  };
 
   return (
-    <div className="admin-panel" style={{ padding: "20px" }}>
+    <div className="admin-container">
+      <div className="admin-card big-card">
+        <h1 className="admin-title">Admin Configuration Panel</h1>
 
-      <h1>Admin Configuration Panel</h1>
-      <hr />
+        <section className="section-block">
+          <div className="section-head">
+            <h2 className="section-title">Admin Basic Info</h2>
+          </div>
 
+          <div className="form-grid single-grid">
+            <div className="input-group">
+              <label>Admin Name</label>
+              <input
+                type="text"
+                value={adminConfig.adminName}
+                onChange={(e) =>
+                  setAdminConfig({ adminName: e.target.value })
+                }
+                placeholder="Enter admin name"
+              />
+            </div>
+          </div>
 
-      {/* ------------ ADMIN NAME ---------------- */}
-      <h2>Admin Basic Info</h2>
+          <button className="save-btn" onClick={saveAdminName}>
+            Save Admin Name
+          </button>
+        </section>
 
-      <label>Admin Name</label>
-      <input
-        type="text"
-        onChange={(e) => setAdminConfig({ adminName: e.target.value })}
-      />
+        <section className="section-block">
+          <div className="section-head">
+            <h2 className="section-title">Upload Banners</h2>
+            <span className="section-badge">4 Banners</span>
+          </div>
 
-      <button onClick={saveAdminName}>Save Admin Name</button>
+          <div className="banner-grid">
+            {["banner1", "banner2", "banner3", "banner4"].map((key, i) => (
+              <div className="upload-card" key={key}>
+                <div className="input-group">
+                  <label>Banner {i + 1}</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleBannerChange(e, key)}
+                  />
+                </div>
 
-      <hr />
+                {bannerPreview[key] ? (
+                  <img
+                    src={bannerPreview[key]}
+                    alt={`banner-${i + 1}`}
+                    className="preview-image wide-preview"
+                  />
+                ) : (
+                  <div className="empty-preview">No image selected</div>
+                )}
+              </div>
+            ))}
+          </div>
 
+          <button className="save-btn" onClick={saveBanners}>
+            Save Banners
+          </button>
+        </section>
 
-      {/* ------------ BANNERS ---------------- */}
-      <h2>Upload Banners (4)</h2>
+        <section className="section-block">
+          <div className="section-head">
+            <h2 className="section-title">Theme Setup</h2>
+            <span className="section-badge">Desktop Layout</span>
+          </div>
 
-      {["banner1", "banner2", "banner3", "banner4"].map((key, i) => (
-        <div key={i}>
-          <label>Banner {i + 1}</label>
-          <input type="file" onChange={(e) => handleBannerChange(e, key)} />
-          {bannerPreview[key] && <img src={bannerPreview[key]} width="200" />}
-        </div>
-      ))}
+          {[1, 2, 3, 4].map((t) => {
+            const map = {
+              1: ["img1", "img2", "img3", "img4"],
+              2: ["img6", "img7", "img8", "img9"],
+              3: ["img11", "img12", "img13", "img14"],
+              4: ["img16", "img17", "img18", "img19"]
+            };
 
-      <button onClick={saveBanners}>Save Banners</button>
+            return (
+              <div className="theme-card" key={t}>
+                <h3 className="theme-heading">Theme {t}</h3>
 
-      <hr />
+                <div className="theme-top-grid">
+                  <div className="input-group">
+                    <label>Theme Name {t}</label>
+                    <input
+                      type="text"
+                      value={themeUpload[`themeName${t}`]}
+                      onChange={(e) =>
+                        setThemeUpload((prev) => ({
+                          ...prev,
+                          [`themeName${t}`]: e.target.value
+                        }))
+                      }
+                      placeholder={`Enter theme ${t} name`}
+                    />
+                  </div>
 
+                  <div className="input-group">
+                    <label>Main Theme Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleThemeImage(e, `themeImg${t}`)}
+                    />
+                  </div>
+                </div>
 
-      {/* ------------ THEMES ---------------- */}
-      <h2>Create 5 Themes</h2>
+                {themePreview[`themeImg${t}`] && (
+                  <img
+                    src={themePreview[`themeImg${t}`]}
+                    alt={`theme-main-${t}`}
+                    className="preview-image hero-preview"
+                  />
+                )}
 
-      {[1, 2, 3, 4, 5].map((n) => (
-        <div key={n}>
-          <label>Theme Name {n}</label>
-          <input
-            type="text"
-            onChange={(e) =>
-              setThemeUpload({ ...themeUpload, [`themeName${n}`]: e.target.value })
-            }
-          />
+                <div className="theme-grid">
+                  {map[t].map((key) => {
+                    const nameKey = `${key}Name`;
 
-          <label>Theme Image {n}</label>
-          <input type="file" onChange={(e) => handleThemeImg(e, `img${n}`)} />
+                    return (
+                      <div className="mini-card" key={key}>
+                        <label>{key.toUpperCase()}</label>
 
-          {themeImagesPreview[`img${n}`] && (
-            <img src={themeImagesPreview[`img${n}`]} width="200" />
-          )}
-        </div>
-      ))}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleThemeImage(e, key)}
+                        />
 
-      <button onClick={saveTheme}>Save Theme</button>
+                        <input
+                          type="text"
+                          placeholder="Image Name"
+                          value={themeUpload[nameKey]}
+                          onChange={(e) =>
+                            handleThemeNameChange(nameKey, e.target.value)
+                          }
+                        />
 
-      <hr />
+                        {themePreview[key] ? (
+                          <img
+                            src={themePreview[key]}
+                            alt={key}
+                            className="preview-image square-preview"
+                          />
+                        ) : (
+                          <div className="empty-preview mini-empty">
+                            No image
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
 
+          <button className="save-btn" onClick={saveTheme}>
+            Save All Themes
+          </button>
+        </section>
 
-      {/* ------------ CLIENT CONFIG ---------------- */}
-      <h2>Client Configuration</h2>
+        <section className="section-block client-brand-section">
+          <div className="section-head">
+            <h2 className="section-title">Client Choose Brand</h2>
+            <span className="section-badge">
+              {clientBrandList.length} Added
+            </span>
+          </div>
 
-      <label>Client Name</label>
-      <input
-        type="text"
-        onChange={(e) => setClient({ ...client, clientName: e.target.value })}
-      />
+          <div className="client-brand-layout">
+            <div className="client-brand-form-card">
+              <h3 className="sub-title">Add New Brand</h3>
 
-      <label>Client URL</label>
-      <input
-        type="text"
-        onChange={(e) => setClient({ ...client, clientUrl: e.target.value })}
-      />
+              <div className="form-grid">
+                <div className="input-group">
+                  <label>Brand Name</label>
+                  <input
+                    type="text"
+                    placeholder="Enter brand name"
+                    value={clientBrandForm.brandName}
+                    onChange={(e) =>
+                      handleClientBrandChange("brandName", e.target.value)
+                    }
+                  />
+                </div>
 
+                <div className="input-group">
+                  <label>Category</label>
+                  <select
+                    value={clientBrandForm.category}
+                    onChange={(e) =>
+                      handleClientBrandChange("category", e.target.value)
+                    }
+                  >
+                    <option value="">Select category</option>
+                    {CATEGORY_OPTIONS.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-      {/* ⭐ THEME DROPDOWN (DYNAMIC) */}
-      <label>Select Client Theme</label>
-      <select
-        onChange={(e) => setClient({ ...client, clientTheme: e.target.value })}
-      >
-        <option value="">Select Theme</option>
+              <div className="input-group">
+                <label>Terms and Conditions</label>
+                <textarea
+                  rows="5"
+                  placeholder="Enter terms and conditions"
+                  value={clientBrandForm.termsAndConditions}
+                  onChange={(e) =>
+                    handleClientBrandChange(
+                      "termsAndConditions",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
 
-        {Object.keys(themeData).map((theme, i) => (
-          <option key={i} value={theme}>
-            {theme}
-          </option>
-        ))}
-      </select>
+              <div className="input-group">
+                <label>How to Redeem</label>
+                <textarea
+                  rows="5"
+                  placeholder="Enter how to redeem"
+                  value={clientBrandForm.howToRedeem}
+                  onChange={(e) =>
+                    handleClientBrandChange("howToRedeem", e.target.value)
+                  }
+                />
+              </div>
 
+              <div className="input-group">
+                <label>Brand Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleClientBrandImage}
+                />
+              </div>
 
-      {/* ⭐ SELECTED THEME IMAGE PREVIEW */}
-      {client.clientTheme && (
-        <div style={{ marginTop: "20px" }}>
-          <h4>Selected Theme Preview:</h4>
-          <img
-            src={`http://localhost:8080${themeData[client.clientTheme]}`}
-            width="250"
-            style={{
-              borderRadius: "10px",
-              border: "3px solid #1A73E8",
-              padding: "4px"
-            }}
-          />
-        </div>
-      )}
+              {clientBrandPreview ? (
+                <img
+                  src={clientBrandPreview}
+                  alt="brand-preview"
+                  className="preview-image brand-preview-large"
+                />
+              ) : (
+                <div className="empty-preview brand-empty-preview">
+                  Brand image preview will appear here
+                </div>
+              )}
 
+              <button
+                className="save-btn"
+                onClick={saveClientChooseBrand}
+                disabled={brandLoading}
+              >
+                {brandLoading ? "Saving..." : "Add Client Brand"}
+              </button>
+            </div>
 
-      <label>Select Brands</label>
-      <select multiple onChange={handleBrandChange}>
-        <option value="Amazon">Amazon</option>
-        <option value="Flipkart">Flipkart</option>
-        <option value="Swiggy">Swiggy</option>
-        <option value="Myntra">Myntra</option>
-        <option value="Zomato">Zomato</option>
-      </select>
+            <div className="client-brand-list-card">
+              <h3 className="sub-title">Added Brands</h3>
 
-      <label>Client Value</label>
-      <input
-        type="number"
-        onChange={(e) => setClient({ ...client, clientValue: e.target.value })}
-      />
+              {clientBrandList.length === 0 ? (
+                <p className="empty-text">No brand added yet.</p>
+              ) : (
+                <div className="brand-grid">
+                  {clientBrandList.map((item, index) => (
+                    <div className="brand-card" key={item.id || index}>
+                      <img
+                        src={getImageUrl(item.brandImg)}
+                        alt={item.brandName}
+                        className="brand-card-img"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
 
-      <h3>Generated Code:</h3>
-      <input type="text" value={client.codeNumber} readOnly />
+                      <div className="brand-card-body">
+                        <div className="brand-card-top">
+                          <h4>{item.brandName}</h4>
+                          <span className="brand-tag">{item.category}</span>
+                        </div>
 
-      <button onClick={saveClient}>Save Client</button>
+                        <div className="brand-info-block">
+                          <h5>Terms & Conditions</h5>
+                          <p className="brand-card-text multiline-text">
+                            {item.termsAndConditions || "No terms added"}
+                          </p>
+                        </div>
 
+                        <div className="brand-info-block">
+                          <h5>How to Redeem</h5>
+                          <p className="brand-card-text multiline-text">
+                            {item.howToRedeem || "No redeem steps added"}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="delete-btn"
+                          onClick={() => deleteBrand(item.id, item.brandName)}
+                          disabled={deleteLoadingId === item.id}
+                        >
+                          {deleteLoadingId === item.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };
