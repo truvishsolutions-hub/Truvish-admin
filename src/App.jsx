@@ -1,13 +1,8 @@
-import react from 'react';
-import AdminClientUI from './components/AdminClientUI';
+import React from "react";
+import AdminClientUI from "./components/AdminClientUI";
 
 function App() {
-
-  return (
-    <>
-      <AdminClientUI/>
-    </>
-  )
+  return <AdminClientUI />;
 }
 
-export default App
+export default App;
